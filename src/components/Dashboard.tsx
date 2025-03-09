@@ -3,21 +3,21 @@ import Calendar from './Calendar';  // On va déplacer le contenu actuel de App.
 import { ScheduleArchive } from './ScheduleArchive';
 
 export function Dashboard() {
-  const { logout, saveScheduleImage, user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com"; // À adapter
+  const { logout, saveScheduleImage, user } = useAuth();  // On va déplacer le contenu actuel de App.tsx ici
+  const isDirector = user?.email === "princeekpinse97@gmail.com";
 
   return (
     <div>
       <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="flex items-center justify-between px-6 py-3">
-          <h1 className="text-xl font-semibold text-gray-800">HECM Class Schedule</h1>
+          <h1 className="text-xl font-semibold text-gray-800">HECM Calendar</h1>
           <div className="flex gap-4">
             {isDirector && (
               <button
                 onClick={saveScheduleImage}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors shadow-sm"
               >
-                Archiver l'emploi du temps
+                Archirver
               </button>
             )}
             <button
@@ -29,7 +29,7 @@ export function Dashboard() {
           </div>
         </div>
       </header>
-      <div id="calendar-container">
+      <div >
         <Calendar />
       </div>
       {isDirector && <ScheduleArchive />}

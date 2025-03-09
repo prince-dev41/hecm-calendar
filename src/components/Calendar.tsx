@@ -18,7 +18,7 @@ import {
 } from 'date-fns';
 import toast from 'react-hot-toast';
 
-import { useAuth } from './contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { Login } from './components/Login';
 
 interface ClassEvent {
@@ -42,7 +42,11 @@ const eventColors = [
   { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Rouge' }
 ];
 
+
 function App() {
+  
+  const { user } = useAuth();
+  const isDirector = user?.email === "princeekpinse97@gmail.com";
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<ClassEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -230,31 +234,38 @@ function App() {
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white flex flex-col">
         <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-          <div className="flex items-center px-6 py-3">
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Menu className="w-6 h-6 text-gray-600" />
-            </button>
-            <h1 className="ml-4 text-xl font-semibold text-gray-800">Emploi du temps HECM</h1>
-            <div className="ml-8 flex items-center space-x-2">
-              <button
-                onClick={() => {
-                  setIsEditMode(false);
-                  setIsModalOpen(true);
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center shadow-sm"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Ajouter un cours
+          <div className="flex flex-col sm:flex-row items-start sm:items-center px-4 py-3 space-y-3 sm:space-y-0">
+            <div className="flex items-center w-full sm:w-auto">
+              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <Menu className="w-6 h-6 text-gray-600" />
               </button>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-8">
+              {isDirector && (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsEditMode(false);
+                      setIsModalOpen(true);
+                    }}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center shadow-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    Ajouter un cours
+                  </button>
+                  
+                </>
+              )}
               <button
                 onClick={goToToday}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm whitespace-nowrap"
               >
                 Aujourd'hui
               </button>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigateWeek('prev')}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -267,88 +278,92 @@ function App() {
                 >
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
+                <span className="text-lg font-semibold whitespace-nowrap">
+                  {format(selectedDate, 'MMMM yyyy')}
+                </span>
               </div>
-              <span className="text-lg font-semibold">
-                {format(selectedDate, 'MMMM yyyy')}
-              </span>
             </div>
           </div>
         </header>
 
-        <div className="flex overflow-x-auto" id="calendar-container">
-          <div className="w-20 flex-none border-r border-gray-200 bg-white">
-            <div className="h-14 border-b border-gray-200"></div>
-            {timeSlots.map((hour) => (
-              <div key={hour} className="h-14 border-b border-red-200">
-                <span className="text-xs text-gray-500 px-2">
-                  {format(new Date().setHours(hour), 'ha')}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex-1 grid grid-cols-7">
-            {getDatesForWeek().map((date, index) => (
-              <div key={index} className="border-r border-gray-200">
-                <div className="h-14 border-b border-gray-200 text-center py-2 sticky top-0 bg-white">
-                  <div className="text-sm text-gray-500">{format(date, 'EEEE')}</div>
-                  <div className={`text-lg font-semibold ${isSameDay(date, new Date()) ? 'text-blue-600' : ''}`}>
-                    {format(date, 'MMM d')}
-                  </div>
-                </div>
-
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full overflow-x-auto" id="calendar-container">
+            <div className="min-w-[768px] flex">
+              <div className="w-16 sm:w-20 flex-none border-r border-gray-200 bg-white sticky left-0 z-20">
+                <div className="h-14 border-b border-gray-200"></div>
                 {timeSlots.map((hour) => (
-                  <div
-                    key={`${index}-${hour}`}
-                    className="h-14 border-b border-gray-200 relative group"
-                    onClick={() => {
-                      if (!isEditMode) {
-                        const newDate = new Date(date);
-                        newDate.setHours(hour);
-                        setNewEvent(prev => ({
-                          ...prev,
-                          start: newDate,
-                          end: addHours(newDate, 1)
-                        }));
-                        setIsModalOpen(true);
-                      }
-                    }}
-                  >
-                    <div className="absolute inset-0 group-hover:bg-blue-50 transition-colors duration-100"></div>
-                    {getEventsForSlot(date, hour).map(event => {
-                      const style = getEventStyle(event, date, hour);
-                      if (!style) return null;
-
-                      return (
-                        <div
-                          key={event.id}
-                          className={`absolute left-0 right-0 m-1 p-2 ${event.color} text-white text-sm cursor-pointer overflow-hidden transition-transform hover:scale-[1.02] ${style.borderRadius}`}
-                          style={{
-                            height: style.height,
-                            top: style.top,
-                            zIndex: style.zIndex
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEventClick(event);
-                          }}
-                        >
-                          <div className="font-semibold">{event.courseName}</div>
-                          <div className="text-xs opacity-90">
-                            {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
-                          </div>
-                          <div className="text-xs mt-1">
-                            <span className="opacity-90">Room {event.room}</span>
-                            <span className="opacity-90 mx-1">•</span>
-                            <span className="opacity-90">{event.professor}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div key={hour} className="h-14 border-b border-gray-200">
+                    <span className="text-xs text-gray-500 px-2">
+                      {format(new Date().setHours(hour), 'ha')}
+                    </span>
                   </div>
                 ))}
               </div>
-            ))}
+
+              <div className="flex-1 grid grid-cols-7">
+                {getDatesForWeek().map((date, index) => (
+                  <div key={index} className="border-r border-gray-200 min-w-[100px]">
+                    <div className="h-14 border-b border-gray-200 text-center py-2 sticky top-0 bg-white z-10">
+                      <div className="text-xs sm:text-sm text-gray-500">{format(date, 'EEEE')}</div>
+                      <div className={`text-sm sm:text-lg font-semibold ${isSameDay(date, new Date()) ? 'text-blue-600' : ''}`}>
+                        {format(date, 'MMM d')}
+                      </div>
+                    </div>
+
+                    {timeSlots.map((hour) => (
+                      <div
+                        key={`${index}-${hour}`}
+                        className="h-14 border-b border-gray-200 relative group"
+                        onClick={() => {
+                          if (isDirector && !isEditMode) {
+                            const newDate = new Date(date);
+                            newDate.setHours(hour);
+                            setNewEvent(prev => ({
+                              ...prev,
+                              start: newDate,
+                              end: addHours(newDate, 1)
+                            }));
+                            setIsModalOpen(true);
+                          }
+                        }}
+                      >
+                        <div className="absolute inset-0 group-hover:bg-blue-50 transition-colors duration-100"></div>
+                        {getEventsForSlot(date, hour).map(event => {
+                          const style = getEventStyle(event, date, hour);
+                          if (!style) return null;
+
+                          return (
+                            <div
+                              key={event.id}
+                              className={`absolute left-0 right-0 m-1 p-2 ${event.color} text-white text-xs sm:text-sm cursor-pointer overflow-hidden transition-transform hover:scale-[1.02] ${style.borderRadius}`}
+                              style={{
+                                height: style.height,
+                                top: style.top,
+                                zIndex: style.zIndex
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEventClick(event);
+                              }}
+                            >
+                              <div className="font-semibold truncate">{event.courseName}</div>
+                              <div className="text-xs opacity-90 truncate">
+                                {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                              </div>
+                              <div className="text-xs mt-1 truncate">
+                                <span className="opacity-90">Salle {event.room}</span>
+                                <span className="opacity-90 mx-1">•</span>
+                                <span className="opacity-90">{event.professor}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

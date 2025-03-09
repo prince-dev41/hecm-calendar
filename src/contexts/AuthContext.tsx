@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      const canvas = await html2canvas(calendarElement);
+      const canvas = await html2canvas(calendarElement,{ width: 1370, scale: 1});
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((blob) => resolve(blob!), 'image/png');
       });

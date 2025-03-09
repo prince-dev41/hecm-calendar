@@ -1,3 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
-@tailwind components;
 @tailwind utilities;
+@tailwind components;
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+}
+
+body {
+  font-family: var(--font-inter);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Calendar specific styles */
+.calendar-event {
+  transition: all 0.2s ease;
+}
+
+.calendar-event:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.time-column {
+  font-variant-numeric: tabular-nums;
+}
