@@ -33,13 +33,13 @@ interface ClassEvent {
 }
 
 const timeSlots = Array.from({ length: 13 }, (_, i) => i + 8);
-const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const eventColors = [
-  { bg: 'bg-blue-500', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'Blue' },
-  { bg: 'bg-green-500', hover: 'hover:bg-green-600', text: 'text-green-700', label: 'Green' },
-  { bg: 'bg-purple-500', hover: 'hover:bg-purple-600', text: 'text-purple-700', label: 'Purple' },
-  { bg: 'bg-yellow-500', hover: 'hover:bg-yellow-600', text: 'text-yellow-700', label: 'Yellow' },
-  { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Red' }
+  { bg: 'bg-blue-500', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'Bleu' },
+  { bg: 'bg-green-500', hover: 'hover:bg-green-600', text: 'text-green-700', label: 'Vert' },
+  { bg: 'bg-purple-500', hover: 'hover:bg-purple-600', text: 'text-purple-700', label: 'Violet' },
+  { bg: 'bg-yellow-500', hover: 'hover:bg-yellow-600', text: 'text-yellow-700', label: 'Jaune' },
+  { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Rouge' }
 ];
 
 function App() {
@@ -123,8 +123,9 @@ function App() {
   };
 
   const handleDeleteEvent = (eventId: string) => {
-    if (window.confirm('Are you sure you want to delete this class?')) {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
       setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+      toast.success('Cours supprimé avec succès');
       closeModal();
     }
   };
@@ -235,7 +236,7 @@ function App() {
             <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
               <Menu className="w-6 h-6 text-gray-600" />
             </button>
-            <h1 className="ml-4 text-xl font-semibold text-gray-800">HECM Class Schedule</h1>
+            <h1 className="ml-4 text-xl font-semibold text-gray-800">Emploi du temps HECM</h1>
             <div className="ml-8 flex items-center space-x-2">
               <button
                 onClick={() => {
@@ -245,13 +246,13 @@ function App() {
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center shadow-sm"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add Class
+                Ajouter un cours
               </button>
               <button
                 onClick={goToToday}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm"
               >
-                Today
+                Aujourd'hui
               </button>
               <div className="flex items-center space-x-2">
                 <button
@@ -359,12 +360,12 @@ function App() {
                   {isEditMode ? (
                     <>
                       <Edit3 className="w-5 h-5 mr-2 text-gray-600" />
-                      Edit Class
+                      Modifier le cours
                     </>
                   ) : (
                     <>
                       <Plus className="w-5 h-5 mr-2 text-gray-600" />
-                      Add New Class
+                      Ajouter un nouveau cours
                     </>
                   )}
                 </h2>
@@ -379,11 +380,11 @@ function App() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Course Name
+                    Nom du cours
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter course name"
+                    placeholder="Entrez le nom du cours"
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={newEvent.courseName}
                     onChange={(e) => setNewEvent(prev => ({ ...prev, courseName: e.target.value }))}
@@ -393,11 +394,11 @@ function App() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <User className="w-4 h-4 mr-1" />
-                    Professor
+                    Professeur
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter professor's name"
+                    placeholder="Entrez le nom du professeur"
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={newEvent.professor}
                     onChange={(e) => setNewEvent(prev => ({ ...prev, professor: e.target.value }))}
@@ -407,11 +408,11 @@ function App() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                     <Building2 className="w-4 h-4 mr-1" />
-                    Room
+                    Salle
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter room number"
+                    placeholder="Entrez le numéro de la salle"
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={newEvent.room}
                     onChange={(e) => setNewEvent(prev => ({ ...prev, room: e.target.value }))}
@@ -420,10 +421,10 @@ function App() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Notes
+                    Notes supplémentaires
                   </label>
                   <textarea
-                    placeholder="Add any additional information"
+                    placeholder="Ajoutez des informations supplémentaires"
                     className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     value={newEvent.description}
                     onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
@@ -434,7 +435,7 @@ function App() {
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      Start Time
+                      Heure de début
                     </label>
                     <input
                       type="datetime-local"
@@ -453,7 +454,7 @@ function App() {
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      End Time
+                      Heure de fin
                     </label>
                     <input
                       type="datetime-local"
@@ -469,7 +470,7 @@ function App() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color
+                    Couleur
                   </label>
                   <div className="flex gap-2">
                     {eventColors.map(color => (
@@ -491,12 +492,12 @@ function App() {
                     {isEditMode ? (
                       <>
                         <Edit3 className="w-4 h-4 mr-2" />
-                        Update Class
+                        Mettre à jour
                       </>
                     ) : (
                       <>
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Class
+                        Ajouter
                       </>
                     )}
                   </button>
@@ -506,7 +507,7 @@ function App() {
                       className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
+                      Supprimer
                     </button>
                   )}
                 </div>
