@@ -18,6 +18,7 @@
     "firebase": "^11.4.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.344.0",
+    "posthog-js": "^1.229.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
