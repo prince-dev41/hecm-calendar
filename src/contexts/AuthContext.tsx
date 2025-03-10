@@ -31,12 +31,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Ajouter la constante pour l'URL de base
+  const BASE_URL = window.location.origin;
+  
   const signInWithGoogle = async () => {
     try {
       await account.createOAuth2Session(
         'google',
-        'http://localhost:5173/dashboard',
-        'http://localhost:5173/login'
+        `${BASE_URL}/dashboard`,
+        `${BASE_URL}/login`
       );
       await checkSession();
     } catch (error) {
