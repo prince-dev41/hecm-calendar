@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Menu, Plus, X, Trash2, Clock, Calendar as CalendarIcon, Edit3, Building2, User } from 'lucide-react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -32,7 +31,11 @@ interface ClassEvent {
   description?: string;
 }
 
-const timeSlots = Array.from({ length: 13 }, (_, i) => i + 8);
+// Ajouter l'import de la locale française
+import { fr } from 'date-fns/locale';
+
+// Modifier la plage horaire (6h à 00h)
+const timeSlots = Array.from({ length: 18 }, (_, i) => i + 6);
 const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
 const eventColors = [
   { bg: 'bg-blue-500', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'Bleu' },
@@ -42,13 +45,18 @@ const eventColors = [
   { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Rouge' }
 ];
 
-
 function App() {
-  
   const { user } = useAuth();
   const isDirector = user?.email === "princeekpinse97@gmail.com";
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [events, setEvents] = useState<ClassEvent[]>([]);
+  const [events, setEvents] = useState<ClassEvent[]>(() => {
+    const savedEvents = localStorage.getItem('calendarEvents');
+    return savedEvents ? JSON.parse(savedEvents).map((event: ClassEvent) => ({
+      ...event,
+      start: new Date(event.start),
+      end: new Date(event.end)
+    })) : [];
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ClassEvent | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -87,6 +95,10 @@ function App() {
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   };
 
+  useEffect(() => {
+    localStorage.setItem('calendarEvents', JSON.stringify(events));
+  }, [events]);
+
   const handleCreateOrUpdateEvent = () => {
     if (newEvent.courseName.trim() === '') {
       toast.error('Le nom du cours est requis');
@@ -117,10 +129,10 @@ function App() {
     };
 
     setEvents(prevEvents => {
-      if (isEditMode) {
-        return prevEvents.map(event => event.id === selectedEvent!.id ? eventData : event);
-      }
-      return [...prevEvents, eventData];
+      const updatedEvents = isEditMode 
+        ? prevEvents.map(event => event.id === selectedEvent!.id ? eventData : event)
+        : [...prevEvents, eventData];
+      return updatedEvents;
     });
 
     closeModal();
@@ -128,7 +140,10 @@ function App() {
 
   const handleDeleteEvent = (eventId: string) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
-      setEvents(prevEvents => prevEvents.filter(event => event.id !== eventId));
+      setEvents(prevEvents => {
+        const updatedEvents = prevEvents.filter(event => event.id !== eventId);
+        return updatedEvents;
+      });
       toast.success('Cours supprimé avec succès');
       closeModal();
     }
@@ -150,6 +165,10 @@ function App() {
   };
 
   const handleEventClick = (event: ClassEvent) => {
+    if (!isDirector) {
+      return;
+    }
+
     setSelectedEvent(event);
     setNewEvent({
       courseName: event.courseName,
@@ -192,9 +211,8 @@ function App() {
     const start = new Date(event.start);
     const end = new Date(event.end);
     const slotStart = new Date(slotDate);
-    slotStart.setHours(hour, 0, 0, 0); // Début du créneau horaire
+    slotStart.setHours(hour, 0, 0, 0);
 
-    // Si l'événement ne commence pas dans ce créneau horaire, ne pas le rendre
     if (!isSameDay(slotStart, start) || start.getHours() !== hour) return null;
 
     const duration = differenceInHours(end, start);
@@ -202,8 +220,8 @@ function App() {
     const isLastSlot = isSameDay(addHours(slotStart, 1), end) && end.getHours() === hour + 1;
 
     return {
-      height: `${Math.min(duration * 56)}px`, // Hauteur en fonction de la durée
-      top: isFirstSlot ? `${(start.getMinutes() / 60) * 55}px` : '0', // Ajustement pour les minutes
+      height: `${Math.min(duration * 56)}px`,
+      top: isFirstSlot ? `${(start.getMinutes() / 60) * 55}px` : '0',
       zIndex: isFirstSlot ? 10 : 5,
       borderRadius: isFirstSlot ? 'rounded-t' : isLastSlot ? 'rounded-b' : ''
     };
@@ -214,9 +232,8 @@ function App() {
       const eventStart = new Date(event.start);
       const eventEnd = new Date(event.end);
       const slotStart = new Date(date);
-      slotStart.setHours(hour, 0, 0, 0); // Début du créneau horaire
+      slotStart.setHours(hour, 0, 0, 0);
 
-      // Ne retourne l'événement que s'il commence dans ce créneau horaire
       return (
         isSameDay(eventStart, slotStart) &&
         eventStart.getHours() === hour
@@ -279,7 +296,7 @@ function App() {
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
                 <span className="text-lg font-semibold whitespace-nowrap">
-                  {format(selectedDate, 'MMMM yyyy')}
+                  {format(selectedDate, 'MMMM yyyy', { locale: fr })}
                 </span>
               </div>
             </div>
@@ -294,7 +311,7 @@ function App() {
                 {timeSlots.map((hour) => (
                   <div key={hour} className="h-14 border-b border-gray-200">
                     <span className="text-xs text-gray-500 px-2">
-                      {format(new Date().setHours(hour), 'ha')}
+                      {hour === 24 ? '00:00' : `${hour.toString().padStart(2, '0')}:00`}
                     </span>
                   </div>
                 ))}
@@ -304,9 +321,9 @@ function App() {
                 {getDatesForWeek().map((date, index) => (
                   <div key={index} className="border-r border-gray-200 min-w-[100px]">
                     <div className="h-14 border-b border-gray-200 text-center py-2 sticky top-0 bg-white z-10">
-                      <div className="text-xs sm:text-sm text-gray-500">{format(date, 'EEEE')}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{format(date, 'EEEE', { locale: fr })}</div>
                       <div className={`text-sm sm:text-lg font-semibold ${isSameDay(date, new Date()) ? 'text-blue-600' : ''}`}>
-                        {format(date, 'MMM d')}
+                        {format(date, 'd MMM', { locale: fr })}
                       </div>
                     </div>
 
@@ -335,7 +352,7 @@ function App() {
                           return (
                             <div
                               key={event.id}
-                              className={`absolute left-0 right-0 flex flex-col gap-2  p-2 ${event.color} text-white text-sm cursor-pointer overerflo-auto transition-transform hover:scale-[1.02] ${style.borderRadius}`}
+                              className={`absolute left-0 right-0 flex flex-col gap-2 p-2 ${event.color} text-white text-sm ${isDirector ? 'cursor-pointer' : 'cursor-default'} overflow-auto transition-transform ${isDirector ? 'hover:scale-[1.02]' : ''} ${style.borderRadius}`}
                               style={{
                                 height: style.height,
                                 top: style.top,
@@ -348,7 +365,7 @@ function App() {
                             >
                               <div className="font-semibold" style={{ wordBreak: 'break-word' }}>{event.courseName}</div>
                               <div className="text-xs opacity-90 truncate">
-                                {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
+                                {format(event.start, 'HH:mm', { locale: fr })} - {format(event.end, 'HH:mm', { locale: fr })}
                               </div>
                               <div className="text-xs mt-1 truncate">
                                 <span className="opacity-90">Salle {event.room}</span>
