@@ -203,7 +203,7 @@ function App() {
 
     return {
       height: `${Math.min(duration * 56)}px`, // Hauteur en fonction de la durée
-      top: isFirstSlot ? `${(start.getMinutes() / 60) * 56}px` : '0', // Ajustement pour les minutes
+      top: isFirstSlot ? `${(start.getMinutes() / 60) * 55}px` : '0', // Ajustement pour les minutes
       zIndex: isFirstSlot ? 10 : 5,
       borderRadius: isFirstSlot ? 'rounded-t' : isLastSlot ? 'rounded-b' : ''
     };
@@ -237,7 +237,7 @@ function App() {
       <div className="min-h-screen bg-white flex flex-col">
         <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
           <div className="flex flex-col sm:flex-row items-start sm:items-center px-4 py-3 space-y-3 sm:space-y-0">
-            <div className="flex items-center w-full sm:w-auto">
+            <div className="hidden md:flex items-center w-full sm:w-auto">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <Menu className="w-6 h-6 text-gray-600" />
               </button>
@@ -288,7 +288,7 @@ function App() {
 
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-x-auto" id="calendar-container">
-            <div className="min-w-[768px] flex">
+            <div className="min-w-[2800px]  flex">
               <div className="w-16 sm:w-20 flex-none border-r border-gray-200 bg-white sticky left-0 z-20">
                 <div className="h-14 border-b border-gray-200"></div>
                 {timeSlots.map((hour) => (
@@ -335,7 +335,7 @@ function App() {
                           return (
                             <div
                               key={event.id}
-                              className={`absolute left-0 right-0 m-1 p-2 ${event.color} text-white text-xs sm:text-sm cursor-pointer overflow-hidden transition-transform hover:scale-[1.02] ${style.borderRadius}`}
+                              className={`absolute left-0 right-0 flex flex-col gap-2  p-2 ${event.color} text-white text-sm cursor-pointer overerflo-auto transition-transform hover:scale-[1.02] ${style.borderRadius}`}
                               style={{
                                 height: style.height,
                                 top: style.top,
@@ -346,7 +346,7 @@ function App() {
                                 handleEventClick(event);
                               }}
                             >
-                              <div className="font-semibold truncate">{event.courseName}</div>
+                              <div className="font-semibold" style={{ wordBreak: 'break-word' }}>{event.courseName}</div>
                               <div className="text-xs opacity-90 truncate">
                                 {format(event.start, 'h:mm a')} - {format(event.end, 'h:mm a')}
                               </div>
