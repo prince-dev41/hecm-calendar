@@ -1,25 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Menu, Plus, X, Trash2, Clock, Calendar as CalendarIcon, Edit3, Building2, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Plus, X, Trash2, Clock, Calendar as CalendarIcon, Edit3, Building2, User } from 'lucide-react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import { Users, GraduationCap, BarChart2, Settings } from 'lucide-react';
+import { fr } from 'date-fns/locale';
+
 import {
   format,
   addDays,
   addHours,
   differenceInHours,
   isSameDay,
-  parseISO,
   startOfWeek,
-  endOfWeek,
-  isWithinInterval,
   isBefore,
-  isAfter,
-  formatDistance
 } from 'date-fns';
-import toast from 'react-hot-toast';
-
-import { useAuth } from '../contexts/AuthContext';
-import { Login } from './components/Login';
-
 interface ClassEvent {
   id: string;
   courseName: string;
@@ -31,18 +26,15 @@ interface ClassEvent {
   description?: string;
 }
 
-// Ajouter l'import de la locale française
-import { fr } from 'date-fns/locale';
-
 // Modifier la plage horaire (6h à 00h)
 const timeSlots = Array.from({ length: 18 }, (_, i) => i + 6);
-const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
 const eventColors = [
   { bg: 'bg-blue-500', hover: 'hover:bg-blue-600', text: 'text-blue-700', label: 'Bleu' },
   { bg: 'bg-green-500', hover: 'hover:bg-green-600', text: 'text-green-700', label: 'Vert' },
   { bg: 'bg-purple-500', hover: 'hover:bg-purple-600', text: 'text-purple-700', label: 'Violet' },
   { bg: 'bg-yellow-500', hover: 'hover:bg-yellow-600', text: 'text-yellow-700', label: 'Jaune' },
-  { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Rouge' }
+  { bg: 'bg-red-500', hover: 'hover:bg-red-600', text: 'text-red-700', label: 'Rouge' },
 ];
 
 function App() {
@@ -79,8 +71,6 @@ function App() {
   );
 
   useEffect(() => {
-    const weekStart = startOfWeek(selectedDate);
-    const weekEnd = endOfWeek(selectedDate);
     setEvents(prevEvents =>
       prevEvents.map(event => ({
         ...event,
@@ -230,7 +220,6 @@ function App() {
   const getEventsForSlot = (date: Date, hour: number) => {
     return events.filter(event => {
       const eventStart = new Date(event.start);
-      const eventEnd = new Date(event.end);
       const slotStart = new Date(date);
       slotStart.setHours(hour, 0, 0, 0);
 
@@ -251,83 +240,121 @@ function App() {
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="min-h-screen bg-white flex flex-col">
-        <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center px-4 py-3 space-y-3 sm:space-y-0">
-            <div className="hidden md:flex items-center w-full sm:w-auto">
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <Menu className="w-6 h-6 text-gray-600" />
+      <div className="min-h-screen bg-white flex overflow-hidden">
+        {/* Sidebar with improved z-index and responsive behavior */}
+        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 fixed h-screen z-[60]">
+          <div className="space-y-6">
+            <div className="group relative">
+              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-blue-500">
+                <CalendarIcon className="w-6 h-6" />
+              </button>
+              
+            </div>
+
+            <div className="group relative">
+              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+                <Users className="w-6 h-6" />
+              </button>
+              
+            </div>
+
+            <div className="group relative">
+              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+                <GraduationCap className="w-6 h-6" />
               </button>
             </div>
-            
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-8">
-              {isDirector && (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsEditMode(false);
-                      setIsModalOpen(true);
-                    }}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center shadow-sm"
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    Ajouter un cours
-                  </button>
-                  
-                </>
-              )}
-              <button
-                onClick={goToToday}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm whitespace-nowrap"
-              >
-                Aujourd'hui
+
+            <div className="group relative">
+              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+                <BarChart2 className="w-6 h-6" />
               </button>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => navigateWeek('prev')}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </div>
+
+            {isDirector && (
+              <div className="group relative">
+                <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+                  <Settings className="w-6 h-6" />
                 </button>
-                <button
-                  onClick={() => navigateWeek('next')}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-600" />
-                </button>
-                <span className="text-lg font-semibold whitespace-nowrap">
-                  {format(selectedDate, 'MMMM yyyy', { locale: fr })}
-                </span>
               </div>
-            </div>
+            )}
           </div>
-        </header>
+        </div>
 
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-x-auto" id="calendar-container">
-            <div className="min-w-[2800px]  flex">
-              <div className="w-16 sm:w-20 flex-none border-r border-gray-200 bg-white sticky left-0 z-20">
-                <div className="h-14 border-b border-gray-200"></div>
-                {timeSlots.map((hour) => (
-                  <div key={hour} className="h-14 border-b border-gray-200">
-                    <span className="text-xs text-gray-500 px-2">
-                      {hour === 24 ? '00:00' : `${hour.toString().padStart(2, '0')}:00`}
-                    </span>
-                  </div>
-                ))}
+        {/* Main content with improved responsive layout */}
+        <div className="flex-1 ml-16 w-full">
+          <header className="border-b border-gray-200 bg-white sticky top-0 ">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center px-4 py-3 space-y-3 sm:space-y-0">
+              
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-8">
+                {isDirector && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsEditMode(false);
+                        setIsModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center shadow-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Ajouter un cours
+                    </button>
+                    
+                  </>
+                )}
+                <button
+                  onClick={goToToday}
+                  className="px-4 py-2 hidden md:block bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm whitespace-nowrap"
+                >
+                  Aujourd'hui
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => navigateWeek('prev')}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button
+                    onClick={() => navigateWeek('next')}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <span className="text-lg font-semibold whitespace-nowrap">
+                    {format(selectedDate, 'MMMM yyyy', { locale: fr })}
+                  </span>
+                </div>
               </div>
+            </div>
+          </header>
 
-              <div className="flex-1 grid grid-cols-7">
-                {getDatesForWeek().map((date, index) => (
-                  <div key={index} className="border-r border-gray-200 min-w-[100px]">
-                    <div className="h-14 border-b border-gray-200 text-center py-2 sticky top-0 bg-white z-10">
-                      <div className="text-xs sm:text-sm text-gray-500">{format(date, 'EEEE', { locale: fr })}</div>
-                      <div className={`text-sm sm:text-lg font-semibold ${isSameDay(date, new Date()) ? 'text-blue-600' : ''}`}>
-                        {format(date, 'd MMM', { locale: fr })}
-                      </div>
+          <div className="flex-1 overflow-hidden">
+            <div className="h-[calc(100vh-64px)] overflow-x-auto" id="calendar-container">
+              <div className="min-w-[2800px] flex">
+                <div className="w-16 sm:w-20 flex-none border-r border-gray-200 bg-white sticky left-0 z-40">
+                  <div className="h-14 border-b border-gray-200"></div>
+                  {timeSlots.map((hour) => (
+                    <div key={hour} className="h-14 border-b border-gray-200">
+                      <span className="text-xs text-gray-500 px-2">
+                        {hour === 24 ? '00:00' : `${hour.toString().padStart(2, '0')}:00`}
+                      </span>
                     </div>
+                  ))}
+                </div>
 
-                    {timeSlots.map((hour) => (
+                <div className="flex-1 grid grid-cols-7 min-w-0">
+                  {getDatesForWeek().map((date, index) => (
+                    <div key={index} className="border-r border-gray-200 min-w-[100px] relative">
+                      {/* Header with improved sticky behavior */}
+                      <div className="h-14 border-b border-gray-200 text-center py-2 sticky top-0 bg-white z-30">
+                        <div className="text-xs sm:text-sm text-gray-500">{format(date, 'EEEE', { locale: fr })}</div>
+                        <div className={`text-sm sm:text-lg font-semibold ${isSameDay(date, new Date()) ? 'text-blue-600' : ''}`}>
+                          {format(date, 'd MMM', { locale: fr })}
+                        </div>
+                      </div>
+
+                      {/* Time slots with improved event rendering */}
+                      {timeSlots.map((hour) => (
                       <div
                         key={`${index}-${hour}`}
                         className="h-14 border-b border-gray-200 relative group"
@@ -375,178 +402,180 @@ function App() {
                             </div>
                           );
                         })}
-                      </div>
-                    ))}
-                  </div>
-                ))}
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-[480px] max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold flex items-center">
-                  {isEditMode ? (
-                    <>
-                      <Edit3 className="w-5 h-5 mr-2 text-gray-600" />
-                      Modifier le cours
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-5 h-5 mr-2 text-gray-600" />
-                      Ajouter un nouveau cours
-                    </>
-                  )}
-                </h2>
-                <button
-                  onClick={closeModal}
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nom du cours
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Entrez le nom du cours"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={newEvent.courseName}
-                    onChange={(e) => setNewEvent(prev => ({ ...prev, courseName: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <User className="w-4 h-4 mr-1" />
-                    Professeur
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Entrez le nom du professeur"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={newEvent.professor}
-                    onChange={(e) => setNewEvent(prev => ({ ...prev, professor: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                    <Building2 className="w-4 h-4 mr-1" />
-                    Salle
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Entrez le numéro de la salle"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={newEvent.room}
-                    onChange={(e) => setNewEvent(prev => ({ ...prev, room: e.target.value }))}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes supplémentaires
-                  </label>
-                  <textarea
-                    placeholder="Ajoutez des informations supplémentaires"
-                    className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={newEvent.description}
-                    onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
-                  />
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      Heure de début
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={format(newEvent.start, "yyyy-MM-dd'T'HH:mm")}
-                      onChange={(e) => {
-                        const newStart = new Date(e.target.value);
-                        setNewEvent(prev => ({
-                          ...prev,
-                          start: newStart,
-                          end: addHours(newStart, 1)
-                        }));
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      Heure de fin
-                    </label>
-                    <input
-                      type="datetime-local"
-                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={format(newEvent.end, "yyyy-MM-dd'T'HH:mm")}
-                      onChange={(e) => {
-                        const newEnd = new Date(e.target.value);
-                        setNewEvent(prev => ({ ...prev, end: newEnd }));
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Couleur
-                  </label>
-                  <div className="flex gap-2">
-                    {eventColors.map(color => (
-                      <button
-                        key={color.bg}
-                        className={`w-8 h-8 rounded-full ${color.bg} ${color.hover} transition-transform hover:scale-110 ${newEvent.color === color.bg ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : ''}`}
-                        onClick={() => setNewEvent(prev => ({ ...prev, color: color.bg }))}
-                        title={color.label}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-4">
-                  <button
-                    onClick={handleCreateOrUpdateEvent}
-                    className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
-                  >
+          {/* Modal with highest z-index */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+              <div className="bg-white rounded-lg p-6 w-[480px] max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold flex items-center">
                     {isEditMode ? (
                       <>
-                        <Edit3 className="w-4 h-4 mr-2" />
-                        Mettre à jour
+                        <Edit3 className="w-5 h-5 mr-2 text-gray-600" />
+                        Modifier le cours
                       </>
                     ) : (
                       <>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Ajouter
+                        <Plus className="w-5 h-5 mr-2 text-gray-600" />
+                        Ajouter un nouveau cours
                       </>
                     )}
+                  </h2>
+                  <button
+                    onClick={closeModal}
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-5 h-5" />
                   </button>
-                  {isEditMode && (
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom du cours
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Entrez le nom du cours"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={newEvent.courseName}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, courseName: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <User className="w-4 h-4 mr-1" />
+                      Professeur
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Entrez le nom du professeur"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={newEvent.professor}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, professor: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                      <Building2 className="w-4 h-4 mr-1" />
+                      Salle
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Entrez le numéro de la salle"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={newEvent.room}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, room: e.target.value }))}
+                    />
+                  </div>
+
+                  <div>
+                    <label className=" text-sm font-medium text-gray-700 mb-1">
+                      Notes supplémentaires
+                    </label>
+                    <textarea
+                      placeholder="Ajoutez des informations supplémentaires"
+                      className="w-full p-2 border rounded-lg h-24 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={newEvent.description}
+                      onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Clock className="w-4 h-4 mr-1" />
+                        Heure de début
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={format(newEvent.start, "yyyy-MM-dd'T'HH:mm")}
+                        onChange={(e) => {
+                          const newStart = new Date(e.target.value);
+                          setNewEvent(prev => ({
+                            ...prev,
+                            start: newStart,
+                            end: addHours(newStart, 1)
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className=" text-sm font-medium text-gray-700 mb-1 flex items-center">
+                        <Clock className="w-4 h-4 mr-1" />
+                        Heure de fin
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        value={format(newEvent.end, "yyyy-MM-dd'T'HH:mm")}
+                        onChange={(e) => {
+                          const newEnd = new Date(e.target.value);
+                          setNewEvent(prev => ({ ...prev, end: newEnd }));
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className=" text-sm font-medium text-gray-700 mb-2">
+                      Couleur
+                    </label>
+                    <div className="flex gap-2">
+                      {eventColors.map(color => (
+                        <button
+                          key={color.bg}
+                          className={`w-8 h-8 rounded-full ${color.bg} ${color.hover} transition-transform hover:scale-110 ${newEvent.color === color.bg ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : ''}`}
+                          onClick={() => setNewEvent(prev => ({ ...prev, color: color.bg }))}
+                          title={color.label}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-4">
                     <button
-                      onClick={() => handleDeleteEvent(selectedEvent!.id)}
-                      className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center"
+                      onClick={handleCreateOrUpdateEvent}
+                      className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center"
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Supprimer
+                      {isEditMode ? (
+                        <>
+                          <Edit3 className="w-4 h-4 mr-2" />
+                          Mettre à jour
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Ajouter
+                        </>
+                      )}
                     </button>
-                  )}
+                    {isEditMode && (
+                      <button
+                        onClick={() => handleDeleteEvent(selectedEvent!.id)}
+                        className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Supprimer
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </DndContext>
   );

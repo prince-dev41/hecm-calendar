@@ -1,7 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
 import Calendar from './Calendar';  // On va déplacer le contenu actuel de App.tsx ici
-import { ScheduleArchive } from './ScheduleArchive';
-
 export function Dashboard() {
   const { logout, saveScheduleImage, user } = useAuth();  // On va déplacer le contenu actuel de App.tsx ici
   const isDirector = user?.email === "princeekpinse97@gmail.com";
@@ -35,7 +33,7 @@ export function Dashboard() {
       <div >
         <Calendar />
       </div>
-      {isDirector && <ScheduleArchive />}
+      {/* {isDirector && <ScheduleArchive />} */}
     </div>
   );
 }
