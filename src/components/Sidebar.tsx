@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 export const Sidebar = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const isDirector = user?.email === "princeekpinse97@gmail.com";
 
 //   if (!isDirector) return null;
@@ -19,9 +19,6 @@ export const Sidebar = () => {
           >
             <CalendarIcon className="w-6 h-6" />
           </button>
-          <div className="absolute z-[70] left-16 bg-gray-900 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Emploi du temps
-          </div>
         </div>
 
         <div className="group relative">
@@ -31,25 +28,28 @@ export const Sidebar = () => {
           >
             <Users className="w-6 h-6" />
           </button>
-          <div className="absolute z-[70] left-16 bg-gray-900 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Professeurs
-          </div>
         </div>
-
+        
             <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+              <button 
+                onClick={() => navigate('/students')}
+                className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
                 <GraduationCap className="w-6 h-6" />
               </button>
             </div>
 
             <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
+              <button
+              onClick={() => navigate('/statistics')}
+               className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
                 <BarChart2 className="w-6 h-6" />
               </button>
             </div>
 
             {isDirector && (
-              <div className="group relative">
+              <div 
+              onClick={() => navigate('/settings')}
+              className="group relative">
                 <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
                   <Settings className="w-6 h-6" />
                 </button>

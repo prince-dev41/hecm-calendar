@@ -2,15 +2,20 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './contexts/AuthContext';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
-import { Professors } from './components/Professors';  // Add this import
+import { Professors } from './components/Professors';
+import { Students } from './components/Students';
+import { Statistics } from './components/Statistics';
+import { Settings } from './components/Settings';
+import { Loader } from 'lucide-react';
 
 function App() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-800">
+        <Loader className="animate-spin rounded-full h-8 w-8 border-b-2 text-white" />
+        <div></div>
       </div>
     );
   }
@@ -29,6 +34,18 @@ function App() {
         <Route 
           path="/professors" 
           element={user ? <Professors /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/students" 
+          element={user ? <Students /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/statistics" 
+          element={user ? <Statistics /> : <Navigate to="/login" replace />} 
+        />
+        <Route 
+          path="/settings" 
+          element={user ? <Settings /> : <Navigate to="/login" replace />} 
         />
         <Route 
           path="/" 
