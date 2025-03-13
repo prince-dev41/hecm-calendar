@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 interface AuthContextType {
   user: Models.User<Models.Preferences> | null;
+  isLoading: boolean;  // Add this
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   saveScheduleImage: () => Promise<void>;
@@ -15,7 +16,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
+  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(() => {
+    const cachedUser = localStorage.getItem('user');
+    return cachedUser ? JSON.parse(cachedUser) : null;
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkSession();
@@ -23,15 +28,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkSession = async () => {
     try {
+      const cachedUser = localStorage.getItem('user');
+      if (cachedUser) {
+        setUser(JSON.parse(cachedUser));
+        setIsLoading(false);
+        return;
+      }
+
       const userData = await account.get();
       setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
     } catch (error) {
       console.error('Session error:', error);
       setUser(null);
+      localStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Ajouter la constante pour l'URL de base
   const BASE_URL = window.location.origin;
   
   const signInWithGoogle = async () => {
@@ -53,6 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await account.deleteSessions();
       setUser(null);
+      localStorage.removeItem('user');
       toast.success('Déconnexion réussie');
     } catch (error) {
       toast.error('Erreur lors de la déconnexion');
@@ -138,6 +154,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <AuthContext.Provider value={{ 
       user, 
+      isLoading,
       signInWithGoogle, 
       logout,
       saveScheduleImage,

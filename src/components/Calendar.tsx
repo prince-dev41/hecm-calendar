@@ -15,6 +15,7 @@ import {
   startOfWeek,
   isBefore,
 } from 'date-fns';
+import { Sidebar } from './Sidebar';
 interface ClassEvent {
   id: string;
   courseName: string;
@@ -242,44 +243,7 @@ function App() {
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="min-h-screen bg-white flex overflow-hidden">
         {/* Sidebar with improved z-index and responsive behavior */}
-        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 fixed h-screen z-[60]">
-          <div className="space-y-6">
-            <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-blue-500">
-                <CalendarIcon className="w-6 h-6" />
-              </button>
-              
-            </div>
-
-            <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
-                <Users className="w-6 h-6" />
-              </button>
-              
-            </div>
-
-            <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
-                <GraduationCap className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="group relative">
-              <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
-                <BarChart2 className="w-6 h-6" />
-              </button>
-            </div>
-
-            {isDirector && (
-              <div className="group relative">
-                <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors text-gray-600">
-                  <Settings className="w-6 h-6" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
+        <Sidebar/>
         {/* Main content with improved responsive layout */}
         <div className="flex-1 ml-16 w-full">
           <header className="border-b border-gray-200 bg-white sticky top-0 ">
