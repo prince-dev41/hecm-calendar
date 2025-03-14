@@ -14,7 +14,7 @@ function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-800">
-        <Loader className="animate-spin rounded-full h-8 w-8 border-b-2 text-white" />
+        <Loader className="animate-spin rounded-full h-14 w-14 text-white" />
         <div></div>
       </div>
     );
