@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Databases, ID } from 'appwrite';
+import { Databases, ID, Query  } from 'appwrite';
 import { client } from '../config/appwrite';
 import toast from 'react-hot-toast';
 
@@ -27,13 +27,44 @@ export const EventManager = () => {
     fetchEvents();
   }, []);
 
+  // const fetchEvents = async () => {
+  //   try {
+  //     const response = await databases.listDocuments(databaseId, collectionId,
+  //       [
+  //           Query.equal('room', 'GRH3')
+  //       ]);
+  //     const eventsWithDates = response.documents.map((event) => ({
+  //       ...event,
+  //       start: new Date(event.start), // Convertir en Date
+  //       end: new Date(event.end), // Convertir en Date
+  //     }));
+  //     setEvents(eventsWithDates);
+  //   } catch (error: any) {
+  //     if (error.code === 404) {
+  //       toast.error('Database or collection not found');
+  //     } else {
+  //       toast.error('Failed to fetch events');
+  //     }
+  //     console.error(error);
+  //   }
+  // };
   const fetchEvents = async () => {
     try {
-      const response = await databases.listDocuments(databaseId, collectionId);
+      const isDirector = 'princeekpinse97@gmail.com'
+      const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
+      const fields = savedFields ? (isDirector ? JSON.parse(savedFields) : [savedFields]) : [];
+      console.log(fields)
+      let query ;
+      if (fields.length > 0) {
+        query = [`${Query}.contains("fields", [${fields.map(f => `"${f}"`).join(',')}])`];
+      }
+      console.log(query)
+  
+      const response = await databases.listDocuments(databaseId, collectionId, query);
       const eventsWithDates = response.documents.map((event) => ({
         ...event,
-        start: new Date(event.start), // Convertir en Date
-        end: new Date(event.end), // Convertir en Date
+        start: new Date(event.start),
+        end: new Date(event.end),
       }));
       setEvents(eventsWithDates);
     } catch (error: any) {
@@ -45,7 +76,6 @@ export const EventManager = () => {
       console.error(error);
     }
   };
-
   const createEvent = async (eventData: ClassEvent) => {
     try {
       await databases.createDocument(databaseId, collectionId, ID.unique(), eventData);
