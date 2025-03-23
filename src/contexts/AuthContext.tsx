@@ -1,15 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { storage, BUCKET_ID, account } from '../config/appwrite';
 import { ID, Models } from 'appwrite';
-import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
+import { Databases } from 'appwrite'; // Import Databases from Appwrite
 
 interface AuthContextType {
   user: Models.User<Models.Preferences> | null;
   isLoading: boolean;  // Add this
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  saveScheduleImage: () => Promise<void>;
+  saveScheduleData: () => Promise<void>;
   getArchivedSchedules: () => Promise<string[]>;
 }
 
@@ -76,31 +76,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const saveScheduleImage = async () => {
+  const saveScheduleData = async (weekClasses: any[]) => {
     if (!user) {
       toast.error('Vous devez être connecté pour sauvegarder');
       return;
     }
 
     try {
-      const calendarElement = document.getElementById('calendar-container');
-      if (!calendarElement) {
-        console.error('Élément calendar-container non trouvé');
-        return;
+      const databases = new Databases(client); // Initialize the Databases instance
+      const databaseId = '67cd6cf6000deb755f61'; // Replace with your actual database ID
+      const collectionId = '67d6b8f50029ee11fbf4'; // Replace with your actual collection ID
+
+      // Iterate over the classes and save each one to the database
+      for (const classData of weekClasses) {
+        await databases.createDocument(databaseId, collectionId, ID.unique(), classData);
       }
-
-      const canvas = await html2canvas(calendarElement,{ width: 1370, scale: 1});
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => resolve(blob!), 'image/png');
-      });
-
-      const file = new File([blob], `schedule-${Date.now()}.png`, { type: 'image/png' });
-      
-      await storage.createFile(
-        BUCKET_ID,
-        ID.unique(),
-        file
-      );
 
       toast.success('Emploi du temps sauvegardé avec succès');
     } catch (error) {
@@ -157,7 +147,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       isLoading,
       signInWithGoogle, 
       logout,
-      saveScheduleImage,
+      saveScheduleData, // Update the function name in the context
       getArchivedSchedules 
     }}>
       {children}

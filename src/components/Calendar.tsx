@@ -1,21 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, X, Trash2, Clock, Calendar as CalendarIcon, Edit3, Building2, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, X, Trash2, Clock, Edit3, Building2, User } from 'lucide-react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { Users, GraduationCap, BarChart2, Settings } from 'lucide-react';
 import { fr } from 'date-fns/locale';
-
-import {
-  format,
-  addDays,
-  addHours,
-  differenceInHours,
-  isSameDay,
-  startOfWeek,
-  isBefore,
-} from 'date-fns';
 import { Sidebar } from './Sidebar';
+import { format, addDays, addHours, differenceInHours, isSameDay, startOfWeek, isBefore } from 'date-fns';
+import { EventManager } from './EventManager'; // Importez l'EventManager
+
 interface ClassEvent {
   id: string;
   courseName: string;
@@ -25,6 +17,7 @@ interface ClassEvent {
   end: Date;
   color: string;
   description?: string;
+  fields: string[];
 }
 
 // Modifier la plage horaire (6h à 00h)
@@ -42,14 +35,7 @@ function App() {
   const { user } = useAuth();
   const isDirector = user?.email === "princeekpinse97@gmail.com";
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [events, setEvents] = useState<ClassEvent[]>(() => {
-    const savedEvents = localStorage.getItem('calendarEvents');
-    return savedEvents ? JSON.parse(savedEvents).map((event: ClassEvent) => ({
-      ...event,
-      start: new Date(event.start),
-      end: new Date(event.end)
-    })) : [];
-  });
+  const [events, setEvents] = useState<ClassEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<ClassEvent | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -63,6 +49,13 @@ function App() {
     description: ''
   });
 
+  
+  const { events: fetchedEvents, createEvent, updateEvent, deleteEvent } = EventManager();
+
+  useEffect(() => {
+    setEvents(fetchedEvents);
+  }, [fetchedEvents]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -71,26 +64,27 @@ function App() {
     })
   );
 
-  useEffect(() => {
-    setEvents(prevEvents =>
-      prevEvents.map(event => ({
-        ...event,
-        start: new Date(event.start),
-        end: new Date(event.end)
-      }))
-    );
-  }, [selectedDate]);
-
   const getDatesForWeek = () => {
     const start = startOfWeek(selectedDate);
     return Array.from({ length: 7 }, (_, i) => addDays(start, i));
   };
 
-  useEffect(() => {
-    localStorage.setItem('calendarEvents', JSON.stringify(events));
-  }, [events]);
-
-  const handleCreateOrUpdateEvent = () => {
+  const handleCreateOrUpdateEvent = async () => {
+    let fieldsArray: string[] = [];
+  
+    const savedFields = localStorage.getItem('directorSelectedFields');
+  
+    // Si savedFields existe, mappez les données
+    if (savedFields) {
+      const parsedFields = JSON.parse(savedFields);
+      fieldsArray = Object.keys(parsedFields).map((key) =>
+        (parsedFields[key])
+      );
+    } else {
+      console.log('Aucune donnée trouvée dans localStorage pour directorSelectedFields');
+    }
+  
+    // Validation des champs obligatoires
     if (newEvent.courseName.trim() === '') {
       toast.error('Le nom du cours est requis');
       return;
@@ -107,8 +101,9 @@ function App() {
       toast.error('L\'heure de fin ne peut pas être avant l\'heure de début');
       return;
     }
-
-    const eventData: ClassEvent = {
+  
+    // Créez l'objet eventData avec fieldsArray
+    const eventData = {
       id: isEditMode ? selectedEvent!.id : Math.random().toString(36).substr(2, 9),
       courseName: newEvent.courseName,
       professor: newEvent.professor,
@@ -116,28 +111,19 @@ function App() {
       start: newEvent.start,
       end: newEvent.end,
       color: newEvent.color,
-      description: newEvent.description
+      description: newEvent.description,
+      fields: fieldsArray, // Utilisez fieldsArray ici (tableau de chaînes JSON)
     };
-
-    setEvents(prevEvents => {
-      const updatedEvents = isEditMode 
-        ? prevEvents.map(event => event.id === selectedEvent!.id ? eventData : event)
-        : [...prevEvents, eventData];
-      return updatedEvents;
-    });
-
-    closeModal();
-  };
-
-  const handleDeleteEvent = (eventId: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
-      setEvents(prevEvents => {
-        const updatedEvents = prevEvents.filter(event => event.id !== eventId);
-        return updatedEvents;
-      });
-      toast.success('Cours supprimé avec succès');
-      closeModal();
+  
+    // Enregistrez ou mettez à jour l'événement
+    if (isEditMode) {
+      await updateEvent(selectedEvent!.$id, eventData);
+    } else {
+      await createEvent(eventData);
     }
+  
+    // Fermez la modal
+    closeModal();
   };
 
   const closeModal = () => {
@@ -196,6 +182,20 @@ function App() {
           : event
       )
     );
+  };
+
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
+      try {
+        await deleteEvent(eventId); // Supprime l'événement de la base de données
+        toast.success('Cours supprimé avec succès');
+        closeModal(); // Ferme la modal après la suppression
+      } catch (error) {
+        toast.error('Échec de la suppression du cours');
+        console.error(error);
+      }
+    }
   };
 
   const getEventStyle = (event: ClassEvent, slotDate: Date, hour: number) => {
@@ -527,7 +527,7 @@ function App() {
                     </button>
                     {isEditMode && (
                       <button
-                        onClick={() => handleDeleteEvent(selectedEvent!.id)}
+                        onClick={() => handleDeleteEvent(selectedEvent!.$id)}
                         className="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />

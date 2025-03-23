@@ -7,7 +7,7 @@ import { Students } from './components/Students';
 import { Statistics } from './components/Statistics';
 import { Settings } from './components/Settings';
 import { Loader } from 'lucide-react';
-
+import toast, { Toaster } from 'react-hot-toast';
 function App() {
   const { user, isLoading } = useAuth();
 

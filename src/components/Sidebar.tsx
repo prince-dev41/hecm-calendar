@@ -1,4 +1,4 @@
-import { Users, GraduationCap, BarChart2, Settings, Calendar as CalendarIcon, LogOut } from 'lucide-react';
+import { Users, GraduationCap, BarChart2, Settings, Calendar as CalendarIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 

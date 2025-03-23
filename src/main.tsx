@@ -4,7 +4,7 @@ import App from './App.tsx'
 import './index.css'
 import { PostHogProvider } from 'posthog-js/react'
 import { AuthProvider } from './contexts/AuthContext'
-
+import  { Toaster } from 'react-hot-toast';
 const options = {
   api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
 }
@@ -19,5 +19,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <App />
       </AuthProvider>
     </PostHogProvider>
+    <Toaster/>
   </React.StrictMode>,
 )
