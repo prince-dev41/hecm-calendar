@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Databases, ID, Query  } from 'appwrite';
 import { client } from '../config/appwrite';
 import toast from 'react-hot-toast';
-
+import { useAuth } from '../contexts/AuthContext';
 interface ClassEvent {
   id: string;
   courseName: string;
@@ -22,56 +22,56 @@ const collectionId = '67e0003e00290c467a6b'; // Remplacez par l'ID de votre coll
 
 export const EventManager = () => {
   const [events, setEvents] = useState<ClassEvent[]>([]);
-
+  const {  user } = useAuth();
   useEffect(() => {
     fetchEvents();
   }, []);
 
-  // const fetchEvents = async () => {
-  //   try {
-  //     const response = await databases.listDocuments(databaseId, collectionId,
-  //       [
-  //           Query.equal('room', 'GRH3')
-  //       ]);
-  //     const eventsWithDates = response.documents.map((event) => ({
-  //       ...event,
-  //       start: new Date(event.start), // Convertir en Date
-  //       end: new Date(event.end), // Convertir en Date
-  //     }));
-  //     setEvents(eventsWithDates);
-  //   } catch (error: any) {
-  //     if (error.code === 404) {
-  //       toast.error('Database or collection not found');
-  //     } else {
-  //       toast.error('Failed to fetch events');
-  //     }
-  //     console.error(error);
-  //   }
-  // };
   const fetchEvents = async () => {
+    const isDirector = user?.email === "princeekpinse97@gmail.com";
+    const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
+    
+    // Vérification plus stricte des champs sélectionnés
+    if (!savedFields || (isDirector && JSON.parse(savedFields).length === 0)) {
+      toast.error('Aucune filière sélectionnée');
+      return;
+    }
+
     try {
-      const isDirector = 'princeekpinse97@gmail.com'
-      const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
-      const fields = savedFields ? (isDirector ? JSON.parse(savedFields) : [savedFields]) : [];
-      console.log(fields)
-      let query ;
-      if (fields.length > 0) {
-        query = [`${Query}.contains("fields", [${fields.map(f => `"${f}"`).join(',')}])`];
+      let queries: string[] = [];
+      if (isDirector) {
+        const fields = JSON.parse(savedFields);
+        // Vérification supplémentaire pour s'assurer que le tableau n'est pas vide
+        if (fields.length > 0) {
+          queries = [Query.equal('fields', fields)];
+        }
+      } else {
+        queries = [Query.equal('fields', savedFields)];
       }
-      console.log(query)
-  
-      const response = await databases.listDocuments(databaseId, collectionId, query);
+
+      // Si aucune requête n'a été construite, on ne fait pas la requête
+      if (queries.length === 0) {
+        return;
+      }
+
+      const response = await databases.listDocuments(
+        databaseId, 
+        collectionId, 
+        queries
+      );
+
       const eventsWithDates = response.documents.map((event) => ({
         ...event,
         start: new Date(event.start),
         end: new Date(event.end),
       }));
+
       setEvents(eventsWithDates);
     } catch (error: any) {
       if (error.code === 404) {
-        toast.error('Database or collection not found');
+        toast.error('Base de données ou collection introuvable');
       } else {
-        toast.error('Failed to fetch events');
+        toast.error('Échec de la récupération des événements');
       }
       console.error(error);
     }
@@ -109,6 +109,7 @@ export const EventManager = () => {
 
   return {
     events,
+    fetchEvents,
     createEvent,
     updateEvent,
     deleteEvent,

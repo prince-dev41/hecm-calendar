@@ -7,6 +7,7 @@ import { fr } from 'date-fns/locale';
 import { Sidebar } from './Sidebar';
 import { format, addDays, addHours, differenceInHours, isSameDay, startOfWeek, isBefore } from 'date-fns';
 import { EventManager } from './EventManager'; // Importez l'EventManager
+import { Loader2 } from 'lucide-react';
 
 interface ClassEvent {
   id: string;
@@ -51,10 +52,10 @@ function App() {
 
   
   const { events: fetchedEvents, createEvent, updateEvent, deleteEvent } = EventManager();
-
+  const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
   useEffect(() => {
     setEvents(fetchedEvents);
-  }, [fetchedEvents]);
+  }, [fetchedEvents, savedFields]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
