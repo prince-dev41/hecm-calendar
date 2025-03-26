@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 export const Sidebar = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com";
+  const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";
 
 //   if (!isDirector) return null;
 

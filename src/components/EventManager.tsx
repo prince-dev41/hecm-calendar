@@ -28,7 +28,7 @@ export const EventManager = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const isDirector = user?.email === "princeekpinse97@gmail.com";
+    const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";
     const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
     
     // Vérification plus stricte des champs sélectionnés

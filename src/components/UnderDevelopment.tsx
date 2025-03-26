@@ -10,7 +10,7 @@ interface UnderDevelopmentProps {
 export const UnderDevelopment = ({ featureName }: UnderDevelopmentProps) => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com";
+  const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
