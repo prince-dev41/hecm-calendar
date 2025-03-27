@@ -8,8 +8,8 @@ interface ClassEvent {
   courseName: string;
   professor: string;
   room: string;
-  start: string; // Stocké sous forme de chaîne
-  end: string; // Stocké sous forme de chaîne
+  start: string;
+  end: string; 
   color: string;
   description?: string;
   fields?: string[]; // Champ optionnel
@@ -17,8 +17,8 @@ interface ClassEvent {
 
 const databases = new Databases(client);
 
-const databaseId = '67e0001a0020f7637c3b'; // Remplacez par l'ID de votre base de données
-const collectionId = '67e0003e00290c467a6b'; // Remplacez par l'ID de votre collection
+const databaseId = '67e0001a0020f7637c3b';
+const collectionId = '67e0003e00290c467a6b';
 
 export const EventManager = () => {
   const [events, setEvents] = useState<ClassEvent[]>([]);
@@ -28,7 +28,7 @@ export const EventManager = () => {
   }, []);
 
   const fetchEvents = async () => {
-    const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";
+    const isDirector = user?.email === "princeekpinse97@gmail.com" || user?.email==="boscorethice5@gmail.com";
     const savedFields = localStorage.getItem(isDirector ? 'directorSelectedFields' : 'nonDirectorSelectedField');
     
     // Vérification plus stricte des champs sélectionnés

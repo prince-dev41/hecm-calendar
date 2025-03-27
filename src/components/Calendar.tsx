@@ -34,7 +34,7 @@ const eventColors = [
 
 function App() {
   const { user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";
+  const isDirector = user?.email === "princeekpinse97@gmail.com" || user?.email==="boscorethice5@gmail.com";
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<ClassEvent[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);

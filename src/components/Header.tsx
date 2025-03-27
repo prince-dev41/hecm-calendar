@@ -10,7 +10,7 @@ interface HeaderProps {
 
 export const Header = ({ onSave, fields, onFieldsChange }: HeaderProps) => {
   const { logout, user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com" || "boscorethice5@gmail.com";;
+  const isDirector = user?.email === "princeekpinse97@gmail.com" || user?.email==="boscorethice5@gmail.com";
 
   // Separate states for director and non-director
   const [directorSelectedFields, setDirectorSelectedFields] = useState<string[]>(() => {
@@ -30,9 +30,11 @@ export const Header = ({ onSave, fields, onFieldsChange }: HeaderProps) => {
         : [...directorSelectedFields, field];
       setDirectorSelectedFields(updatedFields);
       onFieldsChange(updatedFields);
+      location.reload();
     } else {
       setNonDirectorSelectedField(field);
       onFieldsChange([field]);
+      location.reload();
     }
   };
 

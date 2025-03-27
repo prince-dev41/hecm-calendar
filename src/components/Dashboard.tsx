@@ -5,7 +5,7 @@ import { Header } from './Header';
 
 export function Dashboard() {
   const { saveScheduleData, user } = useAuth();
-  const isDirector = user?.email === "princeekpinse97@gmail.com";
+  const isDirector = user?.email === "princeekpinse97@gmail.com"|| user?.email==="boscorethice5@gmail.com";
 
   const fields = ['SIL 1', 'RIT 2', 'MRH 3', 'SIL 3', 'SSI 4'];
   const [selectedFields, setSelectedFields] = useState<string[]>(() => {
